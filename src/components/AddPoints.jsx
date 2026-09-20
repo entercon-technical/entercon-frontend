@@ -166,7 +166,7 @@ export default function AddPoints() {
     window.localStorage.setItem("darkMode", darkMode);
     axios
       .get(
-        `https://entercon-backend.onrender.com/add-points?dayIndex=${dayIndex}&teamName=${teamName}&event=${event}&points=${eventPoints}&time=${time}&schoolIndex=${schoolIndex}`,
+        `https://entercon-backend-1e81.onrender.com/add-points?dayIndex=${dayIndex}&teamName=${teamName}&event=${event}&points=${eventPoints}&time=${time}&schoolIndex=${schoolIndex}`,
       )
       .then((res) => {
         navigate("/add-points", {
