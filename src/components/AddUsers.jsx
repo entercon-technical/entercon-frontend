@@ -97,7 +97,7 @@ export default function AddUsers() {
             return;
         }
         else {
-            axios.get(`https://entercon-backend.onrender.com/add-users?username=${form.username}&password=${form.password}&role=${form.category}`)
+            axios.get(`https://entercon-backend-1e81.onrender.com/add-users?username=${form.username}&password=${form.password}&role=${form.category}`)
                 .then((res) => {
                     setUsers(res.data);
                     navigate("/add-users", {
@@ -135,7 +135,7 @@ export default function AddUsers() {
 
         else {
 
-            axios.get(`https://entercon-backend.onrender.com/update-users?name=${editValues[i].name}&password=${editValues[i].password}&role=${editValues[i].role}&i=${i}`)
+            axios.get(`https://entercon-backend-1e81.onrender.com/update-users?name=${editValues[i].name}&password=${editValues[i].password}&role=${editValues[i].role}&i=${i}`)
                 .then((res) => {
                     setUsers(res.data);
                     navigate("/add-users", {
@@ -161,7 +161,7 @@ export default function AddUsers() {
 
     const handleDelete = (user, i) => {
 
-        axios.get(`https://entercon-backend.onrender.com/delete-users?i=${i}&user=${user}`)
+        axios.get(`https://entercon-backend-1e81.onrender.com/delete-users?i=${i}&user=${user}`)
             .then((res) => {
                 setUsers(res.data);
 
