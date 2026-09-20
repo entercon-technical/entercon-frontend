@@ -27,7 +27,7 @@ export default function ScoreboardMode2() {
   const role = location.state?.role || "Admin"; // Default to Admin for backward compatibility
 
   axios
-    .get("https://entercon-backend.onrender.com/get-data")
+    .get("https://entercon-backend-1e81.onrender.com/get-data")
     .then((response) => setSchools(response.data))
     .catch((e) => console.log(e));
 
