@@ -98,7 +98,7 @@ export default function ScoreDetails() {
     );
     axios
       .get(
-        `https://entercon-backend.onrender.com/undo-points?dayIndex=${currentDay}&index=${index}&matchingIndex=${matchingIndex}`,
+        `https://entercon-backend-1e81.onrender.com/undo-points?dayIndex=${currentDay}&index=${index}&matchingIndex=${matchingIndex}`,
       )
       .then((res) => {
         navigate("/score-details", {
