@@ -140,7 +140,7 @@ export default function AddSchools() {
     if (editingIndex !== null) {
       //console.log(participants);
     } else {
-      // axios.get(`https://entercon-backend.onrender.com/add-school?...`).then(...).catch(...)
+      // axios.get(`https://entercon-backend-1e81.onrender.com/add-school?...`).then(...).catch(...)
     }
   };
 
@@ -164,7 +164,7 @@ export default function AddSchools() {
 
   const handleDeleteSchool = (index) => {
     axios
-      .get(`https://entercon-backend.onrender.com/delete-school?i=${index}`)
+      .get(`https://entercon-backend-1e81.onrender.com/delete-school?i=${index}`)
       .then((d) => {
         navigate("/add-school", {
           state: { username, users, school: d.data, darkMode, role },
@@ -219,7 +219,7 @@ export default function AddSchools() {
       localStorage.setItem("darkMode", darkMode);
       axios
         .get(
-          `https://entercon-backend.onrender.com/update-school?i=${i}&schoolName=${schoolName}&programName=${programName}&numberOfDays=${dayCount}&participants=${participants}&startDate=${startDate}&endDate=${endDate}&selectedTeams=${selectedTeams}&darkMode=${darkMode}`,
+          `https://entercon-backend-1e81.onrender.com/update-school?i=${i}&schoolName=${schoolName}&programName=${programName}&numberOfDays=${dayCount}&participants=${participants}&startDate=${startDate}&endDate=${endDate}&selectedTeams=${selectedTeams}&darkMode=${darkMode}`,
         )
         .then((d) => {
           navigate("/add-school", {
@@ -232,7 +232,7 @@ export default function AddSchools() {
       localStorage.setItem("darkMode", darkMode);
       axios
         .get(
-          `https://entercon-backend.onrender.com/add-school?schoolName=${schoolName}&programName=${programName}&numberOfDays=${dayCount}&participants=${participants}&startDate=${startDate}&endDate=${endDate}&selectedTeams=${selectedTeams}&eventlog=${[]}&darkMode=${darkMode}`,
+          `https://entercon-backend-1e81.onrender.com/add-school?schoolName=${schoolName}&programName=${programName}&numberOfDays=${dayCount}&participants=${participants}&startDate=${startDate}&endDate=${endDate}&selectedTeams=${selectedTeams}&eventlog=${[]}&darkMode=${darkMode}`,
         )
         .then((d) => {
           navigate("/add-school", {
