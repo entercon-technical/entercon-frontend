@@ -13,7 +13,7 @@ export default function Login() {
   var [data, setData] = useState();
   var [user, setUser] = useState();
 
-  axios.get("https://entercon-backend.onrender.com/")
+  axios.get("https://entercon-backend-1e81.onrender.com/")
     .then((d) => {
       setData(d.data[0]);
       setUser(d.data[0].users);
