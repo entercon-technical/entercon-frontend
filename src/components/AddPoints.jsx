@@ -544,7 +544,7 @@ export default function AddPoints() {
                   <button
                     onClick={() => {
                       setActivity(activity || "+5 Quick");
-                      setPoints(5);
+                      setPoints((currentPoints) => (parseInt(currentPoints) || 0) + 5);
                     }}
                     className="flex-1 bg-green-500 hover:bg-green-600 active:scale-95 text-white text-xs sm:text-sm font-bold px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg transition-all min-w-[60px] touch-highlight"
                   >
@@ -553,7 +553,7 @@ export default function AddPoints() {
                   <button
                     onClick={() => {
                       setActivity(activity || "-5 Penalty");
-                      setPoints(-5);
+                      setPoints((currentPoints) => (parseInt(currentPoints) || 0) - 5);
                     }}
                     className="flex-1 bg-red-500 hover:bg-red-600 active:scale-95 text-white text-xs sm:text-sm font-bold px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg transition-all min-w-[60px] touch-highlight"
                   >
