@@ -4,38 +4,15 @@ import { useMemo } from "react";
 import axios from "axios";
 import BackButton from "./BackButton";
 
-const INITIAL_PRESETS = [
-  {
-    id: 1,
-    label: "Answering in mic",
-    points: 5,
-    color: "bg-gray-600 hover:bg-gray-700 text-white",
-  },
-  {
-    id: 2,
-    label: "War Cry",
-    points: 10,
-    color: "bg-gray-600 hover:bg-gray-700 text-white",
-  },
-  {
-    id: 3,
-    label: "Hunt the Wolf",
-    points: 25,
-    color: "bg-gray-600 hover:bg-gray-700 text-white",
-  },
-  {
-    id: 4,
-    label: "Volunteering",
-    points: 5,
-    color: "bg-gray-600 hover:bg-gray-700 text-white",
-  },
-  {
-    id: 5,
-    label: "Discipline Deduction",
-    points: -5,
-    color: "bg-gray-600 hover:bg-gray-700 text-white",
-  },
-];
+const PRESETS_URL =
+  "https://entercon-backend-1e81.onrender.com/get-data-presets";
+const ADD_PRESET_URL =
+  "https://entercon-backend-1e81.onrender.com/add-preset";
+const UPDATE_PRESET_URL =
+  "https://entercon-backend-1e81.onrender.com/update-preset";
+const DELETE_PRESET_URL =
+  "https://entercon-backend-1e81.onrender.com/delete-preset";
+const PRESET_COLOR = "bg-gray-600 hover:bg-gray-700 text-white";
 
 export default function AddPoints() {
   const [activePage, setActivePage] = useState("Search Scoreboard");
@@ -43,10 +20,11 @@ export default function AddPoints() {
   const [activity, setActivity] = useState("");
   const [points, setPoints] = useState("");
   const [currentDay, setCurrentDay] = useState(0);
-  const [presets, setPresets] = useState(INITIAL_PRESETS);
+  const [presets, setPresets] = useState([]);
   const [showEditPresets, setShowEditPresets] = useState(false);
   const [editPreset, setEditPreset] = useState(null);
   const [newPreset, setNewPreset] = useState({ label: "", points: "" });
+  const [refreshingPresets, setRefreshingPresets] = useState(false);
   const [flash, setFlash] = useState(null);
   const [darkMode, setDarkMode] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -68,6 +46,42 @@ export default function AddPoints() {
   }, [locationState.school]);
   const darkModeStatus = locationState.darkMode;
   const role = locationState?.role || "Admin"; // Default to Admin for backward compatibility
+
+  const getDataPresets = () => {
+    setRefreshingPresets(true);
+    axios
+      .get(PRESETS_URL)
+      .then((res) => {
+        const fetchedPresets = Array.isArray(res.data)
+          ? res.data.flatMap((preset, index) => {
+              if (preset && typeof preset === "object") {
+                const [label, points] = Object.entries(preset)[0] || [];
+
+                if (label !== undefined && !isNaN(Number(points))) {
+                  return [
+                    {
+                      id: index + 1,
+                      label,
+                      points: Number(points),
+                      color: PRESET_COLOR,
+                    },
+                  ];
+                }
+              }
+
+              return [];
+            })
+          : [];
+
+        setPresets(fetchedPresets);
+      })
+      .catch((error) => console.log(error))
+      .finally(() => setRefreshingPresets(false));
+  };
+
+  useEffect(() => {
+    getDataPresets();
+  }, []);
 
   // Conditionally set navItems based on role
   const filteredNavItems = role === "Admin" 
@@ -198,6 +212,12 @@ export default function AddPoints() {
     setPoints(preset.points);
   };
 
+  const getPresetTextSize = (label) => {
+    if (label.length >= 30) return "text-[10px] sm:text-xs";
+    if (label.length >= 20) return "text-[11px] sm:text-xs";
+    return "text-xs sm:text-sm";
+  };
+
   const handleSavePreset = () => {
     const pts = parseInt(newPreset.points);
     if (!newPreset.label || isNaN(pts)) {
@@ -205,26 +225,32 @@ export default function AddPoints() {
       return;
     }
     if (editPreset) {
-      setPresets(
-        presets.map((p) =>
-          p.id === editPreset.id
-            ? { ...p, label: newPreset.label, points: pts }
-            : p,
-        ),
+      const presetIndex = presets.findIndex(
+        (preset) => preset.id === editPreset.id,
       );
-    } else {
-      setPresets([
-        ...presets,
-        {
-          id: Date.now(),
-          label: newPreset.label,
-          points: pts,
-          color: "bg-gray-600 hover:bg-gray-700 text-white",
-        },
-      ]);
+      const preset = { [newPreset.label]: pts };
+
+      axios
+        .get(
+          `${UPDATE_PRESET_URL}?preset=${encodeURIComponent(JSON.stringify(preset))}&i=${presetIndex}`,
+        )
+        .then(() => {
+          getDataPresets();
+          setNewPreset({ label: "", points: "" });
+          setEditPreset(null);
+        })
+        .catch((error) => console.log(error));
+      return;
     }
-    setNewPreset({ label: "", points: "" });
-    setEditPreset(null);
+
+      const preset = { [newPreset.label]: pts };
+      axios
+        .get(`${ADD_PRESET_URL}?preset=${encodeURIComponent(JSON.stringify(preset))}`)
+        .then(() => {
+          getDataPresets();
+          setNewPreset({ label: "", points: "" });
+        })
+        .catch((error) => console.log(error));
   };
 
   const currentDayLogs = eventLog[currentDay] || [];
@@ -542,19 +568,28 @@ export default function AddPoints() {
                   <h3 className={`text-xs sm:text-sm font-bold ${dm.text}`}>
                     ⚡ Quick Presets
                   </h3>
-                  <button
-                    onClick={() => setShowEditPresets(!showEditPresets)}
-                    className="bg-pink-500 hover:bg-pink-600 active:scale-95 text-white text-xs font-bold px-2 sm:px-3 py-1.5 rounded-lg transition-all w-full sm:w-auto touch-highlight"
-                  >
-                    Edit Presets
-                  </button>
+                  <div className="flex gap-2 w-full sm:w-auto">
+                    <button
+                      onClick={getDataPresets}
+                      disabled={refreshingPresets}
+                      className="bg-blue-500 hover:bg-blue-600 disabled:opacity-60 active:scale-95 text-white text-xs font-bold px-2 sm:px-3 py-1.5 rounded-lg transition-all flex-1 sm:flex-none touch-highlight"
+                    >
+                      {refreshingPresets ? "Refreshing..." : "Refresh"}
+                    </button>
+                    <button
+                      onClick={() => setShowEditPresets(!showEditPresets)}
+                      className="bg-pink-500 hover:bg-pink-600 active:scale-95 text-white text-xs font-bold px-2 sm:px-3 py-1.5 rounded-lg transition-all flex-1 sm:flex-none touch-highlight"
+                    >
+                      Edit Presets
+                    </button>
+                  </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2">
                   {presets.map((preset) => (
                     <button
                       key={preset.id}
                       onClick={() => handlePresetClick(preset)}
-                      className={`text-xs sm:text-sm font-bold px-2 sm:px-3 py-1.5 sm:py-2.5 rounded-lg active:scale-95 transition-all text-left truncate touch-highlight ${preset.color}`}
+                      className={`${getPresetTextSize(preset.label)} font-bold px-2 sm:px-3 py-1.5 sm:py-2.5 rounded-lg active:scale-95 transition-all text-left whitespace-normal break-words leading-tight touch-highlight ${preset.color}`}
                     >
                       {preset.label} ({preset.points > 0 ? "+" : ""}
                       {preset.points})
@@ -663,9 +698,16 @@ export default function AddPoints() {
                               ✏️
                             </button>
                             <button
-                              onClick={() =>
-                                setPresets(presets.filter((x) => x.id !== p.id))
-                              }
+                              onClick={() => {
+                                const presetIndex = presets.findIndex(
+                                  (preset) => preset.id === p.id,
+                                );
+
+                                axios
+                                  .get(`${DELETE_PRESET_URL}?i=${presetIndex}`)
+                                  .then(() => getDataPresets())
+                                  .catch((error) => console.log(error));
+                              }}
                               className="text-xs text-red-400 hover:text-red-500 font-bold px-2 py-0.5 rounded transition-colors touch-highlight"
                             >
                               ✕
