@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { Fragment, useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import BackButton from "./BackButton";
 
@@ -6,6 +6,12 @@ const STATUS_STYLES = {
   completed: "bg-green-100 text-green-700",
   ongoing: "bg-blue-100 text-blue-700",
   upcoming: "bg-yellow-100 text-yellow-700",
+};
+
+const DARK_STATUS_STYLES = {
+  completed: "bg-green-900 text-green-200",
+  ongoing: "bg-blue-900 text-blue-200",
+  upcoming: "bg-yellow-900 text-yellow-200",
 };
 
 export default function SearchScoreboard() {
@@ -258,7 +264,75 @@ export default function SearchScoreboard() {
                   <p className={`text-xs mt-1 ${dm.subtext}`}>Try adjusting your search filters.</p>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
+                <>
+                <div className="flex flex-col gap-3 p-3 md:hidden">
+                  {results.map((row) => {
+                    const status = date > row.endDate
+                      ? "Completed"
+                      : date >= row.startDate && date <= row.endDate
+                        ? "Ongoing"
+                        : "Upcoming";
+
+                    return (
+                      <article
+                        key={`mobile-${row.schoolName}-${row.programName}`}
+                        className={`rounded-lg border p-3 ${darkMode ? "border-gray-700 bg-gray-700" : "border-gray-200 bg-gray-50"}`}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <h4 className={`break-words text-sm font-bold ${dm.cell}`}>
+                              {row.schoolName}
+                            </h4>
+                            <p className={`mt-0.5 break-words text-xs ${dm.subtext}`}>
+                              {row.programName}
+                            </p>
+                          </div>
+                          <span className={`shrink-0 rounded-full px-2 py-1 text-[11px] font-bold ${(darkMode ? DARK_STATUS_STYLES : STATUS_STYLES)[status.toLowerCase()]}`}>
+                            {status}
+                          </span>
+                        </div>
+
+                        <dl className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                          <div>
+                            <dt className={dm.subtext}>Duration</dt>
+                            <dd className={`font-bold ${dm.cell}`}>{row.numberOfDays} days</dd>
+                          </div>
+                          <div>
+                            <dt className={dm.subtext}>Participants</dt>
+                            <dd className={`font-bold ${dm.cell}`}>{row.participants}</dd>
+                          </div>
+                          <div>
+                            <dt className={dm.subtext}>Starts</dt>
+                            <dd className={`font-bold ${dm.cell}`}>{row.startDate}</dd>
+                          </div>
+                          <div>
+                            <dt className={dm.subtext}>Ends</dt>
+                            <dd className={`font-bold ${dm.cell}`}>{row.endDate}</dd>
+                          </div>
+                        </dl>
+
+                        <div className={`mt-3 flex gap-2 border-t pt-3 ${darkMode ? "border-gray-600" : "border-gray-200"}`}>
+                          <button
+                            onClick={() => navigate("/score-details", { state: { schoolName: row.schoolName, programName: row.programName, username: username, users: users, school: school, darkMode: darkMode, role: role } })}
+                            className={`min-h-11 flex-1 rounded-lg px-3 py-2 text-xs font-bold transition-all active:scale-95 ${darkMode ? "bg-green-900 text-green-200 hover:bg-green-800" : "bg-green-100 text-green-700 hover:bg-green-200"}`}
+                          >
+                            See Score
+                          </button>
+                          {role === "Admin" && (
+                            <button
+                              onClick={() => navigate("/add-school", { state: { username: username, users: users, school: school, schoolName: row.schoolName, programName: row.programName, darkMode: darkMode, role: role } })}
+                              className={`min-h-11 flex-1 rounded-lg px-3 py-2 text-xs font-bold transition-all active:scale-95 ${darkMode ? "bg-gray-600 text-gray-200 hover:bg-gray-500" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+                            >
+                              Edit Details
+                            </button>
+                          )}
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+
+                <div className="hidden overflow-x-auto md:block">
                   <table className="w-full text-xs min-w-[700px]">
                     <thead className={`uppercase tracking-wide ${dm.tableHead}`}>
                       <tr>
@@ -271,17 +345,17 @@ export default function SearchScoreboard() {
                     </thead>
                     <tbody>
                       {results.map((row) => (
-                        <>
-                        <tr key={row.id} className={`border-t transition-colors ${dm.row}`}>
+                        <Fragment key={`${row.schoolName}-${row.programName}`}>
+                        <tr className={`border-t transition-colors ${dm.row}`}>
                           <td className={`px-5 py-3 font-medium ${dm.cell}`}>{row.schoolName}</td>
                           <td className={`px-5 py-3 ${dm.subtext}`}>{row.programName}</td>
                           <td className="px-5 py-3">
-                            <span className={`bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold ${darkMode ? "dark:bg-gray-700 dark:text-gray-300" : ""}`}>
+                            <span className={`px-2 py-0.5 rounded-full font-bold ${darkMode ? "bg-gray-700 text-gray-200" : "bg-blue-100 text-blue-700"}`}>
                               {row.numberOfDays} days
                             </span>
                           </td>
                           <td className="px-5 py-3">
-                            <span className={`px-2.5 py-0.5 rounded-full font-bold ${STATUS_STYLES[(date > row.endDate
+                            <span className={`px-2.5 py-0.5 rounded-full font-bold ${(darkMode ? DARK_STATUS_STYLES : STATUS_STYLES)[(date > row.endDate
                               ? "Completed"
                               : date >= row.startDate && date <= row.endDate
                                 ? "Ongoing"
@@ -297,14 +371,14 @@ export default function SearchScoreboard() {
                             <div className="flex gap-2 justify-end">
                               <button
                                 onClick={() => navigate("/score-details", { state: { schoolName: row.schoolName, programName: row.programName, username: username, users: users, school: school, darkMode: darkMode, role: role } })}
-                                className="bg-green-100 hover:bg-green-200 text-green-700 text-xs font-bold px-4 py-1.5 rounded-lg active:scale-95 transition-all"
+                                className={`text-xs font-bold px-4 py-1.5 rounded-lg active:scale-95 transition-all ${darkMode ? "bg-green-900 hover:bg-green-800 text-green-200" : "bg-green-100 hover:bg-green-200 text-green-700"}`}
                               >
                                 See
                               </button>
                               {role === "Admin" && (
                                 <button
                                   onClick={() => navigate("/add-school", { state: { username: username, users: users, school: school, schoolName: row.schoolName, programName: row.programName, darkMode: darkMode, role: role } })}
-                                  className={`bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold px-4 py-1.5 rounded-lg active:scale-95 transition-all ${darkMode ? "dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200" : ""}`}
+                                  className={`text-xs font-bold px-4 py-1.5 rounded-lg active:scale-95 transition-all ${darkMode ? "bg-gray-700 hover:bg-gray-600 text-gray-200" : "bg-gray-100 hover:bg-gray-200 text-gray-700"}`}
                                 >
                                   Edit Details
                                 </button>
@@ -315,7 +389,7 @@ export default function SearchScoreboard() {
 
                           {/* Expanded Detail Row */ }
                           { selectedRow?.id === row.id && (
-                          <tr key={`detail-${row.id}`} className={`bg-blue-50 ${darkMode ? "dark:bg-gray-700" : "bg-blue-500"} border-t border-blue-100 dark:border-gray-700`}>
+                          <tr key={`detail-${row.id}`} className={`border-t ${darkMode ? "bg-gray-700 border-gray-600" : "bg-blue-50 border-blue-100"}`}>
                             <td colSpan={5} className="px-6 py-4">
                               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                 {[
@@ -324,20 +398,21 @@ export default function SearchScoreboard() {
                                   { label: "End Date", value: row.endDate },
                                   { label: "Teams Count", value: row.teamNames.length },
                                 ].map((item) => (
-                                  <div key={item.label} className={` ${darkMode ? "dark:bg-gray-400" : "bg-blue-200"} rounded-lg px-4 py-3 border ${darkMode ? "dark:border-gray-700" : "border-blue-100"}`}>
-                                    <p className={`text-xs text-gray-800 font-semibold mb-1`}>{item.label}</p>
-                                    <p className={`text-sm font-bold text-gray-600`}>{item.value}</p>
+                                  <div key={item.label} className={`rounded-lg px-4 py-3 border ${darkMode ? "bg-gray-600 border-gray-500" : "bg-blue-200 border-blue-100"}`}>
+                                    <p className={`text-xs font-semibold mb-1 ${darkMode ? "text-gray-200" : "text-gray-800"}`}>{item.label}</p>
+                                    <p className={`text-sm font-bold ${darkMode ? "text-gray-100" : "text-gray-600"}`}>{item.value}</p>
                                   </div>
                                 ))}
                               </div>
                             </td>
                           </tr>
                         )}
-                    </>
+                    </Fragment>
                       ))}
                   </tbody>
                 </table>
                 </div>
+                </>
           )}
         </div>
           )}

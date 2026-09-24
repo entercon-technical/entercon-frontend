@@ -131,7 +131,7 @@ export default function ScoreDetails() {
     >
       {/* ── Top Bar ── */}
       <div
-        className={`flex items-center justify-between px-3 sm:px-3 sm:px-4 md:px-6 py-3 sm:py-4 border-b ${dm.title}`}
+        className={`flex items-center justify-between px-3 sm:px-4 md:px-6 py-3 sm:py-4 border-b ${dm.title}`}
       >
         <BackButton />
         <button
@@ -154,7 +154,7 @@ export default function ScoreDetails() {
         </button>
 
         <h1
-          className={`text-sm sm:text-sm sm:text-base md:text-lg font-bold text-center flex-1 ${dm.text}`}
+          className={`text-sm sm:text-base md:text-lg font-bold text-center flex-1 min-w-0 ${dm.text}`}
         >
           Welcome to Entercon Score Page!
         </h1>
@@ -184,7 +184,7 @@ export default function ScoreDetails() {
         <div
           className={`
           fixed md:static z-50 top-0 left-0 h-full w-64 md:w-56 shrink-0
-          flex flex-col gap-3 sm:gap-4 md:gap-2 sm:gap-3 md:gap-4 lg:gap-5 lg:gap-6 px-6 py-8 border-r transition-transform duration-300
+          flex flex-col gap-3 sm:gap-4 md:gap-5 px-6 py-8 border-r transition-transform duration-300
           ${dm.sidebar} ${sidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full md:translate-x-0"}
         `}
         >
@@ -227,7 +227,7 @@ export default function ScoreDetails() {
 
         {/* ── Main Content ── */}
         <div
-          className={`flex-1 px-3 sm:px-6 md:px-10 py-4 sm:py-6 md:py-8 flex flex-col gap-4 sm:gap-2 sm:gap-3 md:gap-4 lg:gap-5 md:gap-3 sm:gap-4 md:gap-2 sm:gap-3 md:gap-4 lg:gap-5 lg:gap-6 ${dm.main}`}
+          className={`flex-1 min-w-0 px-3 sm:px-6 md:px-10 py-4 sm:py-6 md:py-8 flex flex-col gap-4 sm:gap-5 md:gap-6 ${dm.main}`}
         >
           {/* Page Header */}
           <div className="flex items-center justify-between flex-wrap gap-3">
@@ -436,7 +436,48 @@ export default function ScoreDetails() {
               </div>
             ) : (
               /* ── Entries Table ── */
-              <div className="overflow-x-auto">
+              <>
+              <div className="flex flex-col gap-3 p-3 md:hidden">
+                {currentDayEntries.map((eLog, index) => (
+                  <article
+                    key={`mobile-${index}`}
+                    className={`rounded-lg border p-3 ${dm.card}`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <h4 className={`truncate text-sm font-bold ${dm.cell}`}>{eLog.team}</h4>
+                        <p className={`mt-0.5 break-words text-xs ${dm.subtext}`}>{eLog.events}</p>
+                      </div>
+                      <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold shadow-sm ${
+                        eLog.points >= 20
+                          ? darkMode ? "bg-emerald-900 text-emerald-200" : "bg-emerald-100 text-emerald-700"
+                          : eLog.points >= 10
+                            ? darkMode ? "bg-blue-900 text-blue-200" : "bg-blue-100 text-blue-700"
+                            : darkMode ? "bg-gray-700 text-gray-300" : "bg-gray-100 text-gray-600"
+                      }`}>
+                        {eLog.points > 0 ? "+" : ""}{eLog.points}
+                      </span>
+                    </div>
+                    <div className="mt-3 flex items-center justify-between gap-3 border-t border-gray-200 pt-3 dark:border-gray-700">
+                      <span className={`text-xs ${dm.subtext}`}>{eLog.time}</span>
+                      <button
+                        onClick={() => handleUndo(eLog, index)}
+                        className={`min-h-11 rounded-lg px-4 py-2 text-xs font-bold text-white shadow-md transition-all active:scale-95 ${
+                          darkMode ? "bg-gray-600 hover:bg-gray-500" : "bg-gray-700 hover:bg-gray-900"
+                        }`}
+                      >
+                        Undo
+                      </button>
+                    </div>
+                  </article>
+                ))}
+                <div className={`flex items-center justify-between rounded-lg px-3 py-2 text-xs font-bold ${darkMode ? "bg-indigo-900 text-indigo-200" : "bg-indigo-600 text-white"}`}>
+                  <span>Total Points</span>
+                  <span>{currentDayTotal} pts</span>
+                </div>
+              </div>
+
+              <div className="hidden overflow-x-auto md:block">
                 <table className="w-full text-xs min-w-[560px]">
                   <thead className={`uppercase tracking-wide ${dm.tableHead}`}>
                     <tr>
@@ -543,6 +584,7 @@ export default function ScoreDetails() {
                   </tfoot>
                 </table>
               </div>
+              </>
             )}
           </div>
         </div>
